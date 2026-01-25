@@ -26,6 +26,7 @@ import { PermissionNext } from "@/permission/next"
 import { Auth } from "@/auth"
 import { HTTPLog } from "@/util/http-log"
 import { FetchInterceptor } from "@/util/fetch-interceptor"
+import { TelemetryLog } from "@/util/telemetry-log"
 
 // 安装全局 fetch 拦截器以记录 HTTP 请求
 FetchInterceptor.install()
@@ -51,6 +52,17 @@ export namespace LLM {
   export type StreamOutput = StreamTextResult<ToolSet, unknown>
 
   export async function stream(input: StreamInput) {
+    // 创建 LLM 调用追踪器
+    const telemetryTracker = TelemetryLog.trackLLMCall({
+      sessionID: input.sessionID,
+      messageID: input.user.id,
+      providerID: input.model.providerID,
+      modelID: input.model.id,
+      agent: input.agent.name,
+      inputMessages: input.messages.length,
+      timestamp: Date.now(),
+    })
+    
     const l = log
       .clone()
       .tag("providerID", input.model.providerID)
@@ -182,10 +194,20 @@ export namespace LLM {
       })
     }
 
-    return streamText({
+    const result = streamText({
       onError(error) {
         l.error("stream error", {
           error,
+        })
+        
+        // 记录失败到遥测
+        telemetryTracker.end({
+          sessionID: input.sessionID,
+          messageID: input.user.id,
+          providerID: input.model.providerID,
+          modelID: input.model.id,
+          success: false,
+          error: error instanceof Error ? error.message : String(error),
         })
       },
       async experimental_repairToolCall(failed) {
@@ -266,7 +288,54 @@ export namespace LLM {
         ],
       }),
       experimental_telemetry: { isEnabled: cfg.experimental?.openTelemetry },
+      async onFinish({ usage, finishReason }) {
+        // 记录成功结果
+        telemetryTracker.end({
+          sessionID: input.sessionID,
+          messageID: input.user.id,
+          providerID: input.model.providerID,
+          modelID: input.model.id,
+          success: true,
+          inputTokens: (usage as any)?.promptTokens,
+          outputTokens: (usage as any)?.completionTokens,
+          totalTokens: (usage as any)?.totalTokens,
+          finishReason,
+        })
+        
+        // 记录 token 使用
+        if (usage) {
+          TelemetryLog.tokenUsage({
+            sessionID: input.sessionID,
+            messageID: input.user.id,
+            providerID: input.model.providerID,
+            modelID: input.model.id,
+            promptTokens: (usage as any).promptTokens,
+            completionTokens: (usage as any).completionTokens,
+            totalTokens: (usage as any).totalTokens,
+            timestamp: Date.now(),
+          })
+          
+          // 如果启用了遥测,打印成本估算
+          if (TelemetryLog.isEnabled()) {
+            const cost = TelemetryLog.estimateCost(
+              input.model.providerID,
+              input.model.id,
+              (usage as any).promptTokens || 0,
+              (usage as any).completionTokens || 0,
+            )
+            
+            if (cost > 0) {
+              console.error(
+                `💰 [COST] ${input.model.providerID}/${input.model.id}: ` +
+                `${TelemetryLog.formatTokens((usage as any).totalTokens || 0)} tokens ≈ $${cost.toFixed(4)}`
+              )
+            }
+          }
+        }
+      },
     })
+    
+    return result
   }
 
   async function resolveTools(input: Pick<StreamInput, "tools" | "agent" | "user">) {

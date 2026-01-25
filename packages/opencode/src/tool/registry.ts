@@ -27,6 +27,7 @@ import { LspTool } from "./lsp"
 import { Truncate } from "./truncation"
 import { PlanExitTool, PlanEnterTool } from "./plan"
 import { ApplyPatchTool } from "./apply_patch"
+import { ToolTelemetry } from "./telemetry"
 
 export namespace ToolRegistry {
   const log = Log.create({ service: "tool.registry" })
@@ -61,7 +62,7 @@ export namespace ToolRegistry {
   })
 
   function fromPlugin(id: string, def: ToolDefinition): Tool.Info {
-    return {
+    const tool: Tool.Info = {
       id,
       init: async (initCtx) => ({
         parameters: z.object(def.args),
@@ -77,6 +78,9 @@ export namespace ToolRegistry {
         },
       }),
     }
+    
+    // 自动包装自定义工具以启用遥测
+    return ToolTelemetry.wrapTool(tool)
   }
 
   export async function register(tool: Tool.Info) {
@@ -147,9 +151,13 @@ export namespace ToolRegistry {
         })
         .map(async (t) => {
           using _ = log.time(t.id)
+          
+          // 自动包装工具以启用遥测
+          const wrappedTool = ToolTelemetry.wrapTool(t)
+          
           return {
-            id: t.id,
-            ...(await t.init({ agent })),
+            id: wrappedTool.id,
+            ...(await wrappedTool.init({ agent })),
           }
         }),
     )

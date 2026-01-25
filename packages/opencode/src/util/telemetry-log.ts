@@ -1,4 +1,5 @@
 import { Log } from "./log"
+import { FormattedConsole } from "./formatted-console"
 import type { MessageV2 } from "../session/message-v2"
 import type { Provider } from "../provider/provider"
 
@@ -57,6 +58,9 @@ export namespace TelemetryLog {
   export function toolCallStart(event: ToolCallEvent) {
     if (!enabled) return
 
+    // 格式化的控制台输出
+    FormattedConsole.toolCallStart(event.toolName, event.input)
+
     log.info("tool_call_start", {
       sessionID: event.sessionID,
       messageID: event.messageID,
@@ -73,6 +77,9 @@ export namespace TelemetryLog {
    */
   export function toolCallEnd(event: ToolResultEvent) {
     if (!enabled) return
+
+    // 格式化的控制台输出
+    FormattedConsole.toolCallEnd(event.toolName, event.success, event.duration)
 
     log.info("tool_call_end", {
       sessionID: event.sessionID,
@@ -184,6 +191,9 @@ export namespace TelemetryLog {
   export function llmCallStart(event: LLMCallEvent) {
     if (!enabled) return
 
+    // 格式化的控制台输出
+    FormattedConsole.llmCallStart(event.providerID, event.modelID)
+
     log.info("llm_call_start", {
       sessionID: event.sessionID,
       messageID: event.messageID,
@@ -201,6 +211,15 @@ export namespace TelemetryLog {
    */
   export function llmCallEnd(event: LLMResultEvent) {
     if (!enabled) return
+
+    // 格式化的控制台输出
+    FormattedConsole.llmCallEnd(
+      event.providerID,
+      event.modelID,
+      event.success,
+      event.totalTokens,
+      event.duration,
+    )
 
     log.info("llm_call_end", {
       sessionID: event.sessionID,

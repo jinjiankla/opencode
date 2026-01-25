@@ -49,8 +49,13 @@ done
 echo "[push_update] Staging changes..."
 git -C "$REPO_ROOT" add -A
 if ! git -C "$REPO_ROOT" diff --cached --quiet; then
-  echo "[push_update] Committing changes with message: update"
-  git -C "$REPO_ROOT" commit -m "update"
+  echo "[push_update] Generating AI commit message..."
+  COMMIT_MSG=$(OPENCODE_DISABLE_MODELS_FETCH=1 bun run --cwd packages/opencode script/ai-msg.ts)
+  if [ -z "$COMMIT_MSG" ]; then
+    COMMIT_MSG="update"
+  fi
+  echo "[push_update] Committing changes with message: $COMMIT_MSG"
+  git -C "$REPO_ROOT" commit -m "$COMMIT_MSG"
 else
   echo "[push_update] No changes to commit."
 fi
