@@ -1,0 +1,5 @@
+OpenCode CLI
+版本: 0.0.0-dev-202601250116
+平台: opencode-darwin-arm64
+构建日期: 2026-01-25 09:40:32
+SHA256: 9fb36853e43b03bda26b7df167e892b9645e23311ec139a445eec8b3aee8f3d0
