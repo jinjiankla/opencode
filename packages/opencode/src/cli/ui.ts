@@ -4,10 +4,10 @@ import { NamedError } from "@opencode-ai/util/error"
 
 export namespace UI {
   const LOGO = [
-    [`                    `, `             ▄     `],
-    [`█▀▀█ █▀▀█ █▀▀█ █▀▀▄ `, `█▀▀▀ █▀▀█ █▀▀█ █▀▀█`],
-    [`█░░█ █░░█ █▀▀▀ █░░█ `, `█░░░ █░░█ █░░█ █▀▀▀`],
-    [`▀▀▀▀ █▀▀▀ ▀▀▀▀ ▀  ▀ `, `▀▀▀▀ ▀▀▀▀ ▀▀▀▀ ▀▀▀▀`],
+    [`                    `, `             ▄  1`],
+    [`█▀▀█ █▀▀█ █▀▀█ █▀▀▄ `, `█▀▀▀ █▀▀█ █▀▀█  1`],
+    [`█░░█ █░░█ █▀▀▀ █░░█ `, `█░░░ █░░█ █░░█  1`],
+    [`▀▀▀▀ █▀▀▀ ▀▀▀▀ ▀  ▀ `, `▀▀▀▀ ▀▀▀▀ ▀▀▀▀  1`],
   ]
 
   export const CancelledError = NamedError.create("UICancelledError", z.void())
