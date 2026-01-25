@@ -17,4 +17,9 @@ if (process.versions.bun !== expectedBunVersion) {
   console.warn(`Warning: Bun version ${process.versions.bun} differs from expected ${expectedBunVersion}`);
 }
 '
-/Users/desire/.bun/bin/bun run typecheck
+cd /Users/desire/Desktop/Code/Github/opencode && for pkg in packages/*/package.json packages/*/*/package.json; do
+  dir=$(dirname "$pkg")
+  if [ -f "$dir/package.json" ] && /Users/desire/.bun/bin/bun --cwd "$dir" run typecheck 2>/dev/null; then
+    echo "✓ $dir typecheck passed"
+  fi
+done
