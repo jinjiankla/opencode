@@ -24,6 +24,11 @@ import { SystemPrompt } from "./system"
 import { Flag } from "@/flag/flag"
 import { PermissionNext } from "@/permission/next"
 import { Auth } from "@/auth"
+import { HTTPLog } from "@/util/http-log"
+import { FetchInterceptor } from "@/util/fetch-interceptor"
+
+// 安装全局 fetch 拦截器以记录 HTTP 请求
+FetchInterceptor.install()
 
 export namespace LLM {
   const log = Log.create({ service: "llm" })
