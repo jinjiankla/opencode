@@ -17,4 +17,4 @@ if (process.versions.bun !== expectedBunVersion) {
   console.warn(`Warning: Bun version ${process.versions.bun} differs from expected ${expectedBunVersion}`);
 }
 '
-cd /Users/desire/Desktop/Code/Github/opencode && /Users/desire/.bun/bin/bun run typecheck
+/Users/desire/.bun/bin/bun run typecheck
