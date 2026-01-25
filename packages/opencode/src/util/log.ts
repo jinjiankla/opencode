@@ -106,43 +106,68 @@ export namespace Log {
       }
     }
 
-    function build(message: any, extra?: Record<string, any>) {
-      const prefix = Object.entries({
-        ...tags,
-        ...extra,
-      })
+    function build(level: string, message: any, extra?: Record<string, any>) {
+      const colors = {
+        DEBUG: "\x1b[90m",
+        INFO: "\x1b[34m",
+        WARN: "\x1b[33m",
+        ERROR: "\x1b[31m",
+        RESET: "\x1b[0m",
+        GRAY: "\x1b[90m",
+        CYAN: "\x1b[36m",
+      }
+
+      const levelColor = colors[level as keyof typeof colors] || colors.RESET
+      const formattedLevel = `${levelColor}${level.padEnd(5)}${colors.RESET}`
+
+      const allTags = { ...tags, ...extra }
+      const tagString = Object.entries(allTags)
         .filter(([_, value]) => value !== undefined && value !== null)
         .map(([key, value]) => {
-          const prefix = `${key}=`
-          if (value instanceof Error) return prefix + formatError(value)
-          if (typeof value === "object") return prefix + JSON.stringify(value)
-          return prefix + value
+          let val = value
+          if (value instanceof Error) val = formatError(value)
+          else if (typeof value === "object") val = JSON.stringify(value)
+          return `${colors.CYAN}${key}${colors.RESET}=${val}`
         })
         .join(" ")
+
       const next = new Date()
       const diff = next.getTime() - last
       last = next.getTime()
-      return [next.toISOString().split(".")[0], "+" + diff + "ms", prefix, message].filter(Boolean).join(" ") + "\n"
+      
+      const timeStr = `${colors.GRAY}${next.toISOString().split("T")[1].split(".")[0]}${colors.RESET}`
+      const diffStr = `${colors.GRAY}+${diff.toString().padStart(3)}ms${colors.RESET}`
+
+      const prefix = [timeStr, diffStr, formattedLevel].filter(Boolean).join(" ")
+      
+      let msg = message
+      if (message instanceof Error) msg = formatError(message)
+      else if (typeof message === "object") msg = JSON.stringify(message)
+
+      const suffix = tagString ? `  ${colors.GRAY}# ${tagString}${colors.RESET}` : ""
+
+      return `${prefix} ${colors.GRAY}│${colors.RESET} ${msg}${suffix}\n`
     }
+
     const result: Logger = {
       debug(message?: any, extra?: Record<string, any>) {
         if (shouldLog("DEBUG")) {
-          write("DEBUG " + build(message, extra))
+          write(build("DEBUG", message, extra))
         }
       },
       info(message?: any, extra?: Record<string, any>) {
         if (shouldLog("INFO")) {
-          write("INFO  " + build(message, extra))
+          write(build("INFO", message, extra))
         }
       },
       error(message?: any, extra?: Record<string, any>) {
         if (shouldLog("ERROR")) {
-          write("ERROR " + build(message, extra))
+          write(build("ERROR", message, extra))
         }
       },
       warn(message?: any, extra?: Record<string, any>) {
         if (shouldLog("WARN")) {
-          write("WARN  " + build(message, extra))
+          write(build("WARN", message, extra))
         }
       },
       tag(key: string, value: string) {

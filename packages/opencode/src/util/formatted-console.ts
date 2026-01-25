@@ -6,7 +6,8 @@ import { Log } from "./log"
  * 提供更清晰、更易读的控制台日志输出
  */
 export namespace FormattedConsole {
-  const enabled = process.env.OPENCODE_TELEMETRY === '1' || process.env.OPENCODE_DEBUG === '1'
+  const enabled =
+    (process.env.OPENCODE_TELEMETRY === "1" || process.env.OPENCODE_DEBUG === "1") && process.env.OPENCODE_TUI !== "1"
   
   // 颜色定义
   const colors = {

@@ -5,16 +5,10 @@
   //   "url": "https://enterprise.dev.opencode.ai",
   // },
   "instructions": ["STYLE_GUIDE.md"],
-  "enabled_providers": ["internal"],
-  "model": "internal/your-model-id",
-  "small_model": "internal/your-model-id",
   "provider": {
-    "internal": {
-      "api": "http://your-internal-api-base-url/v1",
-      "options": {
-        "apiKey": "your-api-key"
-      }
-    }
+   "opencode": {
+      "options": {},
+    },
   },
   "mcp": {
     "context7": {

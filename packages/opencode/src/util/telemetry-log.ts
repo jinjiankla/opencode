@@ -61,13 +61,12 @@ export namespace TelemetryLog {
     // 格式化的控制台输出
     FormattedConsole.toolCallStart(event.toolName, event.input)
 
-    log.info("tool_call_start", {
+    log.info(`[TOOL] ${event.toolName} ➔ started`, {
       sessionID: event.sessionID,
       messageID: event.messageID,
       callID: event.callID,
-      tool: event.toolName,
       agent: event.agent,
-      input: JSON.stringify(event.input),
+      input: event.input,
       timestamp: event.timestamp,
     })
   }
@@ -81,16 +80,13 @@ export namespace TelemetryLog {
     // 格式化的控制台输出
     FormattedConsole.toolCallEnd(event.toolName, event.success, event.duration)
 
-    log.info("tool_call_end", {
+    log.info(`[TOOL] ${event.toolName} ➔ ${event.success ? "completed" : "failed"} (${event.duration}ms)`, {
       sessionID: event.sessionID,
       messageID: event.messageID,
       callID: event.callID,
-      tool: event.toolName,
-      success: event.success,
-      duration: event.duration,
       outputLength: event.output?.length || 0,
       error: event.error,
-      metadata: event.metadata ? JSON.stringify(event.metadata) : undefined,
+      metadata: event.metadata,
       timestamp: event.timestamp,
     })
   }
@@ -194,11 +190,9 @@ export namespace TelemetryLog {
     // 格式化的控制台输出
     FormattedConsole.llmCallStart(event.providerID, event.modelID)
 
-    log.info("llm_call_start", {
+    log.info(`[HTTP] LLM ${event.providerID}/${event.modelID} ➔ request started`, {
       sessionID: event.sessionID,
       messageID: event.messageID,
-      provider: event.providerID,
-      model: event.modelID,
       agent: event.agent,
       inputTokens: event.inputTokens,
       inputMessages: event.inputMessages,
@@ -221,13 +215,9 @@ export namespace TelemetryLog {
       event.duration,
     )
 
-    log.info("llm_call_end", {
+    log.info(`[HTTP] LLM ${event.providerID}/${event.modelID} ➔ ${event.success ? "response received" : "failed"} (${event.duration}ms)`, {
       sessionID: event.sessionID,
       messageID: event.messageID,
-      provider: event.providerID,
-      model: event.modelID,
-      success: event.success,
-      duration: event.duration,
       inputTokens: event.inputTokens,
       outputTokens: event.outputTokens,
       totalTokens: event.totalTokens,
