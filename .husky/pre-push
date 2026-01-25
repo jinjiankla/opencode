@@ -2,7 +2,7 @@
 set -e
 # Check if bun version matches package.json
 # keep in sync with packages/script/src/index.ts semver qualifier
-bun -e '
+/Users/desire/.bun/bin/bun -e '
 import { semver } from "bun";
 const pkg = await Bun.file("package.json").json();
 const expectedBunVersion = pkg.packageManager?.split("@")[1];
@@ -17,4 +17,4 @@ if (process.versions.bun !== expectedBunVersion) {
   console.warn(`Warning: Bun version ${process.versions.bun} differs from expected ${expectedBunVersion}`);
 }
 '
-bun typecheck
+/Users/desire/.bun/bin/bun typecheck
